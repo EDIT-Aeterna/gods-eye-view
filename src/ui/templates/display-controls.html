@@ -7,6 +7,16 @@
     </div>
     <div class="pp-panel-body" data-rail-scroller>
     <div class="pp-toggle-group">
+      <!-- Options are created by src/ui/languageControl.js with each language's
+           own name; switching applies in place without a reload. The row
+           carries `visible` like the other always-on rows: pp-slider-row is
+           display:none by default and feature toggles unhide their own rows. -->
+      <div class="pp-slider-row visible" id="language-row">
+        <label class="pp-slider-mini-label" for="language-select" data-i18n="chrome.language.label">Language</label>
+        <select id="language-select" class="pp-select" aria-label="Interface language" data-i18n-attr="aria-label:chrome.language.aria"></select>
+      </div>
+    </div>
+    <div class="pp-toggle-group">
       <button class="pp-toggle-btn" id="hud-toggle" title="Intelligence HUD (H)" data-i18n-attr="title:display.hud.toggleTitle">
         <span class="pp-icon">&#x25CE;</span>
         <span class="pp-label">HUD</span>
@@ -175,14 +185,6 @@
       <div class="pp-slider-row" id="sharpen-slider-row">
         <input type="range" class="pp-slider" id="sharpen-intensity-slider" min="0" max="100" value="49" aria-label="Sharpen intensity" data-i18n-attr="aria-label:display.sharpen.intensityAria" />
         <span class="pp-slider-value" id="sharpen-intensity-value">49%</span>
-      </div>
-    </div>
-    <div class="pp-toggle-group">
-      <!-- Options are created by src/ui/languageControl.js with each language's
-           own name; switching applies in place without a reload. -->
-      <div class="pp-slider-row" id="language-row">
-        <label class="pp-slider-mini-label" for="language-select" data-i18n="chrome.language.label">Language</label>
-        <select id="language-select" class="pp-select" aria-label="Interface language" data-i18n-attr="aria-label:chrome.language.aria"></select>
       </div>
     </div>
   </div>
