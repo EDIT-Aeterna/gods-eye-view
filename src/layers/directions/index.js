@@ -20,7 +20,9 @@ import * as Cesium from 'cesium';
 import {
   formatRouteDistance,
   formatRouteDuration,
+  localizedInstructionFor,
 } from '../../data/routeSteps.js';
+import { t, subscribeLocale } from '../../i18n/index.js';
 
 export const DIRECTIONS_STEP_OVERLAY_SOURCE_ID = 'directions-step';
 export const DIRECTIONS_STEP_OVERLAY_SOURCE_OPTIONS = Object.freeze({
@@ -105,34 +107,49 @@ export function normalizeDirectionsParams(params = {}) {
 export function directionsRowControls(state) {
   const { mode, armed, a, b, status, route, selectedStep, flightStep } = state;
   const routing = status === 'routing';
+  // Chip and word labels resolve through the pack at paint time — the
+  // DIRECTIONS_MODES spec itself stays English (it keys params and tests).
   const chips = Object.entries(DIRECTIONS_MODES).map(([id, spec]) => ({
     id: `mode-${id}`,
-    label: spec.chip,
+    label: t(`ground.directions.modes.${id}.chip`),
     active: mode === id,
     state: mode === id ? 'active' : 'idle',
-    title: `${spec.word} — reroute for ${spec.word.toLowerCase()}`,
+    title: t('ground.directions.chip.modeTitle', {
+      word: spec.word,
+      lower: spec.word.toLowerCase(),
+    }),
     params: { mode: id },
   }));
   chips.push({
     id: 'set-a',
-    label: armed === 'a' ? 'CLICK MAP' : a ? 'A ✓' : 'SET A',
+    label:
+      armed === 'a'
+        ? t('ground.directions.chip.clickMap')
+        : a
+          ? t('ground.directions.chip.aDone')
+          : t('ground.directions.chip.setA'),
     active: armed === 'a',
     state: armed === 'a' ? 'active' : 'idle',
     title:
       armed === 'a'
-        ? 'Click a spot on the globe to place A (click again to cancel)'
-        : 'Then click the globe to place the start',
+        ? t('ground.directions.chip.setATitleArmed')
+        : t('ground.directions.chip.setATitle'),
     params: { arm: armed === 'a' ? null : 'a' },
   });
   chips.push({
     id: 'set-b',
-    label: armed === 'b' ? 'CLICK MAP' : b ? 'B ✓' : 'SET B',
+    label:
+      armed === 'b'
+        ? t('ground.directions.chip.clickMap')
+        : b
+          ? t('ground.directions.chip.bDone')
+          : t('ground.directions.chip.setB'),
     active: armed === 'b',
     state: armed === 'b' ? 'active' : 'idle',
     title:
       armed === 'b'
-        ? 'Click a spot on the globe to place B (click again to cancel)'
-        : 'Then click the globe to place the destination',
+        ? t('ground.directions.chip.setBTitleArmed')
+        : t('ground.directions.chip.setBTitle'),
     params: { arm: armed === 'b' ? null : 'b' },
   });
   chips.push({
@@ -140,26 +157,32 @@ export function directionsRowControls(state) {
     label: '⇄',
     disabled: !(a && b) || routing,
     state: 'idle',
-    title: 'Swap A and B',
+    title: t('ground.directions.chip.swapTitle'),
     params: { swap: true },
   });
   const flying = Number.isInteger(flightStep);
   chips.push({
     id: 'fly',
-    label: routing ? 'FLY ···' : flying ? 'FLYING' : 'FLY',
+    label: routing
+      ? t('ground.directions.chip.flyBusy')
+      : flying
+        ? t('ground.directions.chip.flying')
+        : t('ground.directions.chip.fly'),
     disabled: !route || routing,
     busy: routing || flying,
     active: flying,
     state: routing || flying ? 'loading' : 'idle',
-    title: route ? 'Fly the camera along the route' : 'Place A and B first',
+    title: route
+      ? t('ground.directions.chip.flyTitle')
+      : t('ground.directions.chip.flyNeedRoute'),
     params: { fly: true },
   });
   chips.push({
     id: 'clear',
-    label: 'CLEAR',
+    label: t('ground.directions.chip.clear'),
     disabled: !a && !b && !route,
     state: 'idle',
-    title: 'Remove the route and both markers',
+    title: t('ground.directions.chip.clearTitle'),
     params: { clear: true },
   });
   return {
@@ -179,8 +202,12 @@ export function directionsRowControls(state) {
  */
 export const POINTER_TOOL_EXITS = Object.freeze({
   draw: Object.freeze({
+    // English constants stay for matching; the toast resolves the
+    // ground.directions.pointer.* keys at compose time.
     name: 'Draw',
+    nameKey: 'ground.directions.pointer.drawName',
     leave: 'press Escape twice to leave Draw',
+    leaveKey: 'ground.directions.pointer.drawLeave',
   }),
 });
 
@@ -201,9 +228,11 @@ export function pointerBlockedMessage(owner, which) {
   if (!id || id === DIRECTIONS_POINTER_OWNER) return null;
   const endpoint = which === 'b' ? 'B' : 'A';
   const known = POINTER_TOOL_EXITS[id];
-  const name = known?.name || id;
-  const leave = known?.leave || `turn ${name} off`;
-  return `${name} is active — ${leave}, then set ${endpoint}`;
+  const name = known ? t(known.nameKey) : id;
+  const leave = known
+    ? t(known.leaveKey)
+    : t('ground.directions.pointer.turnOff', { name });
+  return t('ground.directions.pointer.blocked', { name, leave, endpoint });
 }
 
 /**
@@ -273,7 +302,7 @@ export function directionsStepList({
     id: `step-${index}`,
     ordinal: index + 1,
     lead: formatRouteDistance(step.distanceM) || '—',
-    text: step.instruction,
+    text: localizedInstructionFor(step),
     active: index === active,
     current: Number.isInteger(flightStep) && index === flightStep,
     params: { step: index },
@@ -285,13 +314,13 @@ export function directionsStepList({
       id: 'step-truncated',
       ordinal: items.length + 1,
       lead: '',
-      text: `Only the first ${steps.length} turns of this route are shown`,
+      text: t('ground.directions.list.truncated', { n: steps.length }),
       active: false,
       current: false,
       disabled: true,
     });
   }
-  return { ariaLabel: 'Turn-by-turn directions', items };
+  return { ariaLabel: t('ground.directions.list.aria'), items };
 }
 
 /**
@@ -336,7 +365,7 @@ export function directionsStats(state) {
     return {
       count: route?.steps.length || 0,
       lastUpdate,
-      error: 'Another map tool is using clicks — close it, then SET A again',
+      error: t('ground.directions.stats.pointerBlocked'),
       status: 'empty',
       source,
     };
@@ -347,7 +376,7 @@ export function directionsStats(state) {
       lastUpdate,
       error: null,
       loading: true,
-      loadingLabel: 'Routing…',
+      loadingLabel: t('ground.directions.stats.routing'),
       source,
     };
   }
@@ -355,7 +384,7 @@ export function directionsStats(state) {
     return {
       count: 0,
       lastUpdate,
-      error: error || 'No route found',
+      error: error || t('ground.directions.stats.noRoute'),
       status: 'empty',
       source,
     };
@@ -364,10 +393,21 @@ export function directionsStats(state) {
   // set (not only while loading), so the route summary and the placement
   // guidance ride on it; `coverage` carries the same text for stats readers.
   if (route) {
-    const word = DIRECTIONS_MODES[mode]?.word || mode;
-    const summary =
-      `${formatRouteDistance(route.distanceM)} · ${formatRouteDuration(route.durationS)} · ${word}` +
-      (route.stepsTruncated ? ` · first ${route.steps.length} turns` : '');
+    const word =
+      t(`ground.directions.modes.${mode}.word`) ||
+      DIRECTIONS_MODES[mode]?.word ||
+      mode;
+    const base = t('ground.directions.stats.summary', {
+      distance: formatRouteDistance(route.distanceM),
+      duration: formatRouteDuration(route.durationS),
+      word,
+    });
+    const summary = route.stepsTruncated
+      ? t('ground.directions.stats.truncatedSummary', {
+          summary: base,
+          n: route.steps.length,
+        })
+      : base;
     return {
       count: route.steps.length,
       lastUpdate,
@@ -378,10 +418,13 @@ export function directionsStats(state) {
     };
   }
   let coverage;
-  if (armed) coverage = `Click the globe to place ${armed.toUpperCase()}`;
-  else if (a && !b) coverage = 'SET B, then click the globe';
-  else if (!a && b) coverage = 'SET A, then click the globe';
-  else coverage = 'SET A, then click the globe';
+  if (armed)
+    coverage = t('ground.directions.stats.place', {
+      end: armed.toUpperCase(),
+    });
+  else if (a && !b) coverage = t('ground.directions.stats.setBThen');
+  else if (!a && b) coverage = t('ground.directions.stats.setAThen');
+  else coverage = t('ground.directions.stats.setAThen');
   return {
     count: 0,
     lastUpdate,
@@ -406,11 +449,19 @@ export function directionsStepCopy(steps, index) {
   if (step.distanceM > 0) leg.push(formatRouteDistance(step.distanceM));
   if (step.durationS > 0) leg.push(formatRouteDuration(step.durationS));
   details.push(
-    `Step ${index + 1} of ${steps.length}${leg.length ? ` · then ${leg.join(' · ')}` : ''}`,
+    t('ground.directions.step.of', { n: index + 1, m: steps.length }) +
+      (leg.length
+        ? ` · ${t('ground.directions.step.then', { leg: leg.join(' · ') })}`
+        : ''),
   );
   const next = steps[index + 1];
-  if (next) details.push(`Then: ${next.instruction}`);
-  return { title: step.instruction, details };
+  if (next)
+    details.push(
+      t('ground.directions.step.thenInstruction', {
+        instruction: localizedInstructionFor(next),
+      }),
+    );
+  return { title: localizedInstructionFor(step), details };
 }
 
 /**
@@ -576,6 +627,12 @@ export function createDirectionsLayer({ services }) {
    * read/warm the route dolly uses so it does not fly a mountain at sea level.
    */
   let _shellSeams = null;
+  /**
+   * Locale subscription: the row chips, the stats line and a selected step's
+   * card hold rendered text between data events, so a locale switch repaints
+   * them immediately. Released in destroy().
+   */
+  let _unsubscribeLocale = null;
   // ---------------------------------------------------------------------------
   // Internals
   // ---------------------------------------------------------------------------
@@ -835,8 +892,10 @@ export function createDirectionsLayer({ services }) {
       if (response.status === 429) {
         throw new Error(
           typeof payload?.error === 'string' && payload.error
-            ? `${payload.error} — try again in a moment`
-            : 'Routing is rate limited — try again in a moment',
+            ? t('ground.directions.errors.rateLimitedDetail', {
+                detail: payload.error,
+              })
+            : t('ground.directions.errors.rateLimited'),
         );
       }
       if (seq !== _routeSeq || !_enabled) return;
@@ -846,11 +905,9 @@ export function createDirectionsLayer({ services }) {
         clearRouteGraphics();
         _status = 'error';
         _error =
-          payload?.error === 'no route found'
-            ? 'No route found between A and B'
-            : payload?.error
-              ? `Routing failed: ${payload.error}`
-              : 'No route found between A and B';
+          payload?.error === 'no route found' || !payload?.error
+            ? t('ground.directions.errors.noRouteBetween')
+            : t('ground.directions.errors.failed', { error: payload.error });
         return;
       }
       _route = route;
@@ -867,10 +924,10 @@ export function createDirectionsLayer({ services }) {
       // happened instead.
       _error =
         error?.name === 'AbortError'
-          ? 'Routing timed out'
+          ? t('ground.directions.errors.timedOut')
           : error?.name === 'TypeError'
-            ? 'Routing unavailable — no response from the routing service'
-            : error?.message || 'Routing unavailable';
+            ? t('ground.directions.errors.unreachable')
+            : error?.message || t('ground.directions.errors.unavailable');
     } finally {
       clearTimeout(timer);
       if (_routeAbort === controller) _routeAbort = null;
@@ -1277,6 +1334,11 @@ export function createDirectionsLayer({ services }) {
       _flightStep = null;
       _overlayHost.setVisible(DIRECTIONS_STEP_OVERLAY_SOURCE_ID, false);
       services.sprites.restoreSpriteOrder(viewer);
+      _unsubscribeLocale?.();
+      _unsubscribeLocale = subscribeLocale(() => {
+        notifyRow();
+        if (_selectedStep !== null) refreshStepCard(_selectedStep);
+      });
       console.log('[Data:Directions] Initialized');
     },
 
@@ -1404,6 +1466,8 @@ export function createDirectionsLayer({ services }) {
       cancelOwnedFlight('directions-destroy');
       stopStepAnchoring();
       disarm();
+      _unsubscribeLocale?.();
+      _unsubscribeLocale = null;
       _shellSeams = null;
       _dataManager = null;
       _rowControlsListener = null;
