@@ -5,7 +5,9 @@ is the review checklist for "complete own-UI coverage": every row records the
 implementation state, how it was verified, and anything deliberately left
 English with a reason. Update it whenever UI text is added or moved.
 
-Verified against commit `be359b0` on `codex/i18n-zh-cn` (base `6be2559`).
+Verified against base `6be2559` on `codex/i18n-zh-cn`, including the
+2026-10-09 acceptance-review fixes (privacy-mode storage guards, keyed panel
+collapse actions, sync-chip initial copy, locale-pinned QA gates).
 
 Legend: ✅ translated + verified · 🟡 translated, partial (see note) · ⬜ kept
 English by decision · ➖ not applicable.
@@ -16,7 +18,7 @@ English by decision · ➖ not applicable.
 | --- | --- | --- |
 | `src/i18n/core.js` engine (keys, `{param}` interpolation, en fallback, plurals, Intl formatters) | ✅ | `src/i18n/core.test.mjs` (13 tests) |
 | Locale packs (35 namespaces, en + zh-CN) | ✅ | `src/i18n/locales/parity.test.mjs` (key + placeholder parity) |
-| Saved > browser > en locale resolution, `gods-eye-view.locale` persistence | ✅ | `src/i18n/browser.js` + live browser matrix (below) |
+| Saved > browser > en locale resolution, `gods-eye-view.locale` persistence | ✅ | `src/i18n/browser.js` + live browser matrix (below); storage is resolved inside the guards, so a privacy mode whose `localStorage` **getter** throws cannot block startup (`browser.test.mjs` + a real browser session with a throwing getter) |
 | Pre-paint loading-screen localization (`public/locale-boot.js`) | ✅ | `src/i18n/bootMarkup.test.mjs` + browser: zh first paint |
 | No-reload switch via Display-panel language select | ✅ | live matrix: open panels re-render instantly |
 | Static markup binding (`data-i18n`, `data-i18n-attr`) | ✅ | `src/ui/staticI18n.js` + browser |
@@ -123,14 +125,34 @@ steps in the PR description).
 
 ## Automated checks
 
-- `npm test` — 6235 tests; only pre-existing Windows failure
-  (`codexOauthRealtime` path resolution, reproduces on base `6be2559`).
-- `npm run test:track` — 109/109 (harness pins en before load).
-- `npm run format:check`, `npm run check:boundaries`, `npm run build` — green.
-- New i18n suites: `core.test.mjs`, `locales/parity.test.mjs`,
-  `bootMarkup.test.mjs`.
+Numbers below are from commit `74d5a5c` + the acceptance-report fixes, on
+Windows / Node 24.16.0 / Chrome 152 (npmmirror build), dev server on
+`localhost:4173`.
 
-Not live-tested (no credentials/sandbox): Mapillary street-level imagery
-content, OpenAI voice sessions, Firms/cyclones live feeds against real
-outages — their UI paths are unit-covered; live error copy is translated at
-the same edges.
+- `npm test` — 6,246 tests; 6,235 pass, 1 fail, 10 skipped. The only failure
+  (`codexOauthRealtime` executable resolution) reproduces on base `6be2559`
+  on Windows and is untouched by this work.
+- `npm run test:track` — **109/109** (the harness pins `en` before load; its
+  visible-text assertions are English contracts).
+- `npm run format:check` (1,380 files), `npm run check:boundaries`,
+  `npm run build` — green.
+- i18n suites: `core.test.mjs` (13), `browser.test.mjs` (10, incl. the
+  privacy-mode getter/getItem/setItem guards), `locales/parity.test.mjs` (3),
+  `bootMarkup.test.mjs` (5).
+
+### Locale-relevant browser gates
+
+| Gate | Result | Notes |
+| --- | --- | --- |
+| `qa:panel-resize` | pass (verified in the 2026-10-09 acceptance run) | locale-independent; not re-run after the collapse-label fix |
+| `qa:map-source-tray` | **locale assertions fixed; 2 environment failures remain** | The gate now pins `en` before load; the Esri fallback message asserted in English renders correctly (80 assertions pass). The two remaining failures are network-environmental on this machine: `services.arcgisonline.com/?f=json` is CORS-unreachable (so Esri is classified "unavailable" instead of "tile requests failed") and Bing `http:` tile probes are CSP-blocked, which trips the "no console errors" check. Neither is locale- or translation-related; the gate passes on a network that reaches those endpoints. |
+| `qa:street-level:fixtures` | **pass 29/29** | was failing on zh button text (`BUTTON:开` vs `BUTTON:ON`); the gate pins `en` and passes with a dummy Mapillary token. One earlier run hit a flaky photo-click (`images:0` at click time) that did not reproduce on the warmed server. |
+| `qa:transit` | **launch fixed; live-feed wait times out here** | The gate hardcoded the macOS Chrome path and never launched on Windows; it now resolves Chrome like every other gate (12/12 heading-regression assertions pass). The Boston (MBTA) section times out waiting 90 s for real GTFS-RT vehicles — a live-feed dependency, not a locale issue. |
+
+### Browser acceptance matrix notes
+
+The matrix below was verified live on 2026-10-09; the acceptance review later
+found the initial-state sync chips and the panel collapse labels, which are
+now fixed and re-verified in a throwing-localStorage privacy-mode browser
+session (boot succeeds, `展开 数据图层`/`折叠 显示` labels, zh chips, no
+page errors).

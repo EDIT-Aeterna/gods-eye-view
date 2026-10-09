@@ -37,4 +37,8 @@ export default {
     aria: 'Interface language',
     /** Option labels use each language's own name and are not translated. */
   },
+  panels: {
+    radioTitle: '{action} Radio',
+    radioSectionAria: '{action} Radio section',
+  },
 };

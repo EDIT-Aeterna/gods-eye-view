@@ -36,4 +36,8 @@ export default {
     label: '界面语言',
     aria: '界面语言',
   },
+  panels: {
+    radioTitle: '{action}电台',
+    radioSectionAria: '{action}电台分区',
+  },
 };

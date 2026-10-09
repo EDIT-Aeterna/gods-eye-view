@@ -1,18 +1,28 @@
 import { createStandaloneApplication } from './standalone/application.js';
 import { describeError } from './standalone/errors.js';
 import { currentLocale, setLocale, subscribeLocale, t } from './i18n/index.js';
-import { applyDocumentLanguage, resolveStartupLocale } from './i18n/browser.js';
+import {
+  applyDocumentLanguage,
+  applyDocumentTitle,
+  resolveStartupLocale,
+} from './i18n/browser.js';
 import { bindStaticTranslations } from './ui/staticI18n.js';
 import { createLanguageControl } from './ui/languageControl.js';
 
 // Locale resolution runs before any control constructs: the saved choice
-// wins, then the browser preference, then English. The inline bootstrap in
-// index.html has already painted the loading screen; this pass covers
+// wins, then the browser preference, then English. The pre-paint bootstrap
+// in index.html has already painted the loading screen; this pass covers
 // everything the app itself renders.
 setLocale(resolveStartupLocale());
 applyDocumentLanguage(currentLocale());
+const applyDocumentTitleForLocale = () =>
+  applyDocumentTitle(t('boot.language.documentTitle'));
+applyDocumentTitleForLocale();
 bindStaticTranslations();
-subscribeLocale(applyDocumentLanguage);
+subscribeLocale((locale) => {
+  applyDocumentLanguage(locale);
+  applyDocumentTitleForLocale();
+});
 createLanguageControl({ select: document.getElementById('language-select') });
 
 const application = createStandaloneApplication({

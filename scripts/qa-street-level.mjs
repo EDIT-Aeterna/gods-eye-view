@@ -372,6 +372,15 @@ async function clickPanelControl(page, selector, { timeout = 5_000 } = {}) {
 
 /** Load the app and clear the first-run dialog. */
 export async function boot(page, url) {
+  // The fixtures gate asserts English button text (BUTTON:ON), so pin the
+  // English locale before the app resolves one from a zh-locale machine.
+  await page.evaluateOnNewDocument(() => {
+    try {
+      localStorage.setItem('gods-eye-view.locale', 'en');
+    } catch {
+      // Assertions need English; a blocked store cannot provide it.
+    }
+  });
   await page.goto(url, { waitUntil: 'domcontentloaded' });
   await clearFirstRun(page);
 }
