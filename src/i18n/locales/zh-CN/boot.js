@@ -12,6 +12,8 @@ export default {
     google3dUnavailable:
       'Google 3D Tiles 不可用（{detail}）。正在加载免密钥地球…',
     initializingSystems: '正在初始化各系统…',
+    flyAustin: '正在飞往德克萨斯州奥斯汀…',
+    restoringShare: '正在恢复分享的视野…',
   },
   errors: {
     unknownInit: '未知初始化错误',

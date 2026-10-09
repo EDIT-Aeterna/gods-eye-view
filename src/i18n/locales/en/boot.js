@@ -12,6 +12,8 @@ export default {
     google3dUnavailable:
       'Google 3D Tiles unavailable ({detail}). Loading the keyless globe...',
     initializingSystems: 'Initializing systems...',
+    flyAustin: 'Flying to Austin, TX...',
+    restoringShare: 'Restoring shared view...',
   },
   errors: {
     unknownInit: 'Unknown initialization error',

@@ -8,7 +8,7 @@
  * the map, layers and open panels re-render through their own subscriptions.
  */
 import { LOCALE_DISPLAY_NAMES, SUPPORTED_LOCALES } from '../i18n/core.js';
-import { currentLocale, setLocale } from '../i18n/index.js';
+import { currentLocale, setLocale, subscribeLocale } from '../i18n/index.js';
 import { persistLocale } from '../i18n/browser.js';
 
 export function createLanguageControl({
