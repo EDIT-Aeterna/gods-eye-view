@@ -1,5 +1,11 @@
 # Changelog
 
+- The interface ships in English and Simplified Chinese. First launch follows
+  the browser language; the Display panel's Language select switches in place
+  (no reload) and persists the choice. The map, tracking, share links and
+  open panels survive a switch, and missing translations fall back to
+  English. See docs/I18N.md and README.zh-CN.md.
+
 - Vector tile sources take their allowed tile origin from the configured
   `tileJsonUrl`, so repointing only that URL at a mirror loads tiles from the
   mirror or fails visibly instead of silently using OpenFreeMap. Thanks to
