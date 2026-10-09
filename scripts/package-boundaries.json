@@ -2187,7 +2187,22 @@
       "src/tools/functions.js",
       "src/voice/actionSchemas.js",
       "src/view/index.js",
-      "src/app/embed.js"
+      "src/app/embed.js",
+      "src/i18n/browser.js",
+      "src/i18n/core.js",
+      "src/i18n/index.js",
+      "src/i18n/locales/en.js",
+      "src/i18n/locales/en/boot.js",
+      "src/i18n/locales/en/chrome.js",
+      "src/i18n/locales/en/common.js",
+      "src/i18n/locales/en/welcome.js",
+      "src/i18n/locales/zh-CN.js",
+      "src/i18n/locales/zh-CN/boot.js",
+      "src/i18n/locales/zh-CN/chrome.js",
+      "src/i18n/locales/zh-CN/common.js",
+      "src/i18n/locales/zh-CN/welcome.js",
+      "src/ui/languageControl.js",
+      "src/ui/staticI18n.js"
     ],
     "external": [
       "hls.js",
