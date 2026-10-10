@@ -130,9 +130,10 @@ Windows / Node 24.16.0 / Chrome 152, dev server on `localhost:4173`
 (2026-10-10). Every gate row states what actually ran on THIS commit and
 what remains environment-blocked.
 
-- `npm test` — 6,266 tests; 6,255 pass, 1 fail. The only failure
-  (`codexOauthRealtime` executable resolution) reproduces on base `6be2559`
-  on Windows and is untouched by this work.
+- `npm test` — 6,251 tests; 6,240 pass, 1 fail, 10 skipped, measured on
+  this i18n-only head. The only failure (`codexOauthRealtime` executable
+  resolution) reproduces on base `6be2559` on Windows and is untouched by
+  this work.
 - `npm run test:track` — **109/109**, re-run on the current commit.
 - `npm run format:check` (1,380 files), `npm run check:boundaries`,
   `npm run build` — green.
