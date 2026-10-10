@@ -130,7 +130,7 @@ Windows / Node 24.16.0 / Chrome 152, dev server on `localhost:4173`
 (2026-10-10). Every gate row states what actually ran on THIS commit and
 what remains environment-blocked.
 
-- `npm test` — 6,250 tests; 6,239 pass, 1 fail, 11 skipped. The only failure
+- `npm test` — 6,266 tests; 6,255 pass, 1 fail. The only failure
   (`codexOauthRealtime` executable resolution) reproduces on base `6be2559`
   on Windows and is untouched by this work.
 - `npm run test:track` — **109/109**, re-run on the current commit.
@@ -138,9 +138,10 @@ what remains environment-blocked.
   `npm run build` — green.
 - i18n suites: `core.test.mjs` (13), `browser.test.mjs` (10, incl. the
   privacy-mode getter/getItem/setItem guards), `locales/parity.test.mjs` (3),
-  `bootMarkup.test.mjs` (5), `cctvSyncChip.test.mjs` (4: loading →
+  `bootMarkup.test.mjs` (5), `cctvSyncChip.test.mjs` (5: loading →
   grid-ready → locale switch keeps the completion semantics and the dwell
-  timer).
+  timer, including the REAL subscription order — state render pass first,
+  then the label repaint — so the render pass cannot clear the ready mode).
 
 ### Locale-relevant browser gates (this commit)
 

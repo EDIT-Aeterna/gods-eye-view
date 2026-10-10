@@ -246,10 +246,11 @@ export function _updateCctvSyncChip(loading, enabled) {
   if (this.destroyed) return;
   if (!this._cctvSyncChip || !this._cctvSyncLabel || !this._cctvSyncProgress)
     return;
-  // Remember what the visible chip is showing so a locale switch can
-  // re-translate the label in place (repaintCctvSyncChipLabel) without
-  // touching the visibility or the completion dwell timer.
-  this._cctvChipMode = null;
+  // The chip mode (loading / ready) is what lets a locale switch re-translate
+  // the visible label (repaintCctvSyncChipLabel). It is ONLY reassigned when
+  // the chip actually transitions below — in particular the no-op tick while
+  // the completion dwell timer runs must keep the ready mode, because the
+  // real locale subscription renders state BEFORE repainting the label.
   const total = Number(loading?.total) || 0;
   const loaded = Math.max(0, Math.min(Number(loading?.loaded) || 0, total));
   const busy = !!enabled && !!loading?.active && total > 0;

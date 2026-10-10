@@ -101,6 +101,45 @@ test('P2: a locale switch during the completion dwell re-translates the label in
   }
 });
 
+test('P2: the REAL subscription order (render state, then repaint) re-translates the dwell label', () => {
+  const { ctx, labels, timers, restoreWindow } = createChipContext();
+  try {
+    // Loading drives the chip, then completes: ready mode + 1500 ms dwell.
+    _updateCctvSyncChip.call(ctx, { active: true, total: 5, loaded: 4 }, true);
+    _updateCctvSyncChip.call(ctx, { active: false, total: 5, loaded: 5 }, true);
+    assert.equal(ctx._cctvChipMode, 'ready');
+    const timerCountBefore = timers.length;
+
+    setLocale('zh-CN');
+    try {
+      // This is exactly what the CctvControls locale subscription runs, in
+      // order: the state render calls _updateCctvSyncChip with the stored
+      // (completed) state, and only then the label repaint happens. The
+      // render pass must NOT clear the ready mode out from under it.
+      _updateCctvSyncChip.call(
+        ctx,
+        { active: false, total: 5, loaded: 5 },
+        true,
+      );
+      repaintCctvSyncChipLabel.call(ctx);
+
+      assert.equal(ctx._cctvChipMode, 'ready');
+      assert.equal(ctx._cctvSyncLabel.textContent, t('cctv.sync.gridReady'));
+      assert.notEqual(
+        ctx._cctvSyncLabel.textContent,
+        'camera grid ready',
+        'the old-language completion copy must be re-translated',
+      );
+      // Dwell untouched: same timer count, chip still visible-mode ready.
+      assert.equal(timers.length, timerCountBefore);
+    } finally {
+      setLocale('en');
+    }
+  } finally {
+    restoreWindow();
+  }
+});
+
 test('the repaint is inert without a visible chip mode', () => {
   const { ctx, labels, restoreWindow } = createChipContext();
   try {
