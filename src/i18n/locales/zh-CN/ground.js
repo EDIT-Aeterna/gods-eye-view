@@ -102,6 +102,7 @@ export default {
     errors: {
       rateLimitedDetail: '{detail} — 请稍后重试',
       rateLimited: '路线请求过于频繁 — 请稍后重试',
+      httpUnavailable: '路线服务不可用（HTTP {status}）',
       noRouteBetween: '在 A 和 B 之间未找到路线',
       failed: '路线规划失败：{error}',
       timedOut: '路线规划超时',

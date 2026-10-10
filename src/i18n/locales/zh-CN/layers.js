@@ -76,6 +76,9 @@ export default {
     withGuidance: '{label}：{state}。{guidance}',
     plain: '{label}：{state}',
   },
+  guidance: {
+    sourceUnavailable: '数据源不可用',
+  },
   clear: {
     busy: '正在清除已选数据图层',
   },

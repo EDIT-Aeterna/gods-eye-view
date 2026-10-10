@@ -76,6 +76,9 @@ export default {
     withGuidance: '{label}: {state}. {guidance}',
     plain: '{label}: {state}',
   },
+  guidance: {
+    sourceUnavailable: 'Data source unavailable',
+  },
   clear: {
     busy: 'Clearing selected data layers',
   },

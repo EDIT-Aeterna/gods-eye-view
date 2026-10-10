@@ -503,10 +503,7 @@ export function createDirectionsStepOverlayEntry(index, position, copy) {
  * @param {{lat:number, lon:number}} b
  * @returns {string}
  */
-export function directionsRequestUrl(mode, a, b) {
-  const coords = `${a.lon.toFixed(6)},${a.lat.toFixed(6)};${b.lon.toFixed(6)},${b.lat.toFixed(6)}`;
-  return `/api/route?profile=${encodeURIComponent(mode)}&coords=${encodeURIComponent(coords)}&steps=1`;
-}
+export { directionsRequestUrl } from './source.js';
 
 /**
  * Validate a proxy payload into the route record the layer keeps, or null.
@@ -560,10 +557,12 @@ export function normalizeRoutePayload(payload, mode) {
  * route, the markers, the pointer claim or the flight this layer owns. The
  * shared services are injected, which is what keeps this module's own imports
  * down to Cesium and the pure step formatter.
- * @param {{services: object}} options
+ * @param {{services: object, source: {getRoute: Function}}} options
  * @returns {object} The layer module the data manager registers.
  */
-export function createDirectionsLayer({ services }) {
+export function createDirectionsLayer({ services, source }) {
+  if (typeof source?.getRoute !== 'function')
+    throw new TypeError('Directions require a route source');
   /**
    * Where the maneuver card is drawn. Defaults to the shared world-overlay host;
    * tests swap it. Resolved on use, not at import, because the services arrive
@@ -884,21 +883,12 @@ export function createDirectionsLayer({ services }) {
     _error = null;
     notifyRow();
     try {
-      const response = await fetch(directionsRequestUrl(mode, _a, _b), {
-        signal: controller.signal,
-        headers: { Accept: 'application/json' },
-      });
-      const payload = await response.json();
-      if (response.status === 429) {
-        throw new Error(
-          typeof payload?.error === 'string' && payload.error
-            ? t('ground.directions.errors.rateLimitedDetail', {
-                detail: payload.error,
-              })
-            : t('ground.directions.errors.rateLimited'),
-        );
-      }
-      if (seq !== _routeSeq || !_enabled) return;
+      const payload = await source.getRoute(
+        { mode, a: _a, b: _b },
+        {
+          signal: controller.signal,
+        },
+      );      if (seq !== _routeSeq || !_enabled) return;
       const route = normalizeRoutePayload(payload, mode);
       if (!route) {
         _route = null;
@@ -921,19 +911,61 @@ export function createDirectionsLayer({ services }) {
       _status = 'error';
       // A fetch that never reaches the proxy rejects with the browser's own
       // wording ("Failed to fetch"), which tells a reader nothing. Say what
-      // happened instead.
+      // happened instead. The acquisition source is a portable module, so its
+      // stable English messages are re-translated here at the display edge.
       _error =
         error?.name === 'AbortError'
           ? t('ground.directions.errors.timedOut')
           : error?.name === 'TypeError'
             ? t('ground.directions.errors.unreachable')
-            : error?.message || t('ground.directions.errors.unavailable');
+            : translateRouteSourceError(error?.message) ||
+              error?.message ||
+              t('ground.directions.errors.unavailable');
     } finally {
       clearTimeout(timer);
       if (_routeAbort === controller) _routeAbort = null;
       if (seq === _routeSeq) notifyRow();
       services.render.governorRequestRender('directions-route');
     }
+  }
+
+  const ROUTE_SOURCE_ERRORS = Object.freeze({
+    exact: Object.freeze([
+      {
+        text: 'Routing is rate limited — try again in a moment',
+        key: 'ground.directions.errors.rateLimited',
+      },
+    ]),
+    patterns: Object.freeze([
+      {
+        // `${payload.error} — try again in a moment`
+        regex: /^(.+) — try again in a moment$/u,
+        key: 'ground.directions.errors.rateLimitedDetail',
+      },
+      {
+        regex: /^Routing unavailable \(HTTP (\d+)\)$/u,
+        key: 'ground.directions.errors.httpUnavailable',
+      },
+    ]),
+  });
+
+  /**
+   * Re-translate the portable route source's known English messages for the
+   * active locale; unknown text (provider wording, browser errors) passes
+   * through unchanged.
+   * @param {string} [message]
+   * @returns {string} the translated message, or '' when nothing matches.
+   */
+  function translateRouteSourceError(message) {
+    if (!message) return '';
+    for (const entry of ROUTE_SOURCE_ERRORS.exact) {
+      if (message === entry.text) return t(entry.key);
+    }
+    for (const entry of ROUTE_SOURCE_ERRORS.patterns) {
+      const match = entry.regex.exec(message);
+      if (match) return t(entry.key, { detail: match[1], status: match[1] });
+    }
+    return '';
   }
 
   /** Stop arming, and give the pointer back if this layer holds it. */

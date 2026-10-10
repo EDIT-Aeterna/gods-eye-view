@@ -678,7 +678,12 @@ export class LayerPanel {
   }
 
   _syncToggleButton(button, layer) {
-    const feedState = layer.enabled ? layerFeedState(layer.stats) : 'off';
+    const unavailable = layer.stats?.sourceUnavailable === true;
+    const feedState = unavailable
+      ? 'unavailable'
+      : layer.enabled
+        ? layerFeedState(layer.stats)
+        : 'off';
     const transitioning =
       layer.lifecycleState === 'enabling' ||
       layer.lifecycleState === 'disabling';
@@ -691,7 +696,7 @@ export class LayerPanel {
     for (const state of Object.keys(FEED_STATE_KEYS)) {
       button.classList.toggle(
         `feed-${state}`,
-        layer.enabled && !uncertain && feedState === state,
+        (layer.enabled || unavailable) && !uncertain && feedState === state,
       );
     }
     button.dataset.feedState = transitioning
@@ -703,17 +708,21 @@ export class LayerPanel {
     // click guard above prevents repeat activation without the focus loss caused
     // by native `disabled`.
     button.disabled = false;
-    button.setAttribute('aria-disabled', String(transitioning));
+    button.setAttribute(
+      'aria-disabled',
+      String(transitioning || (unavailable && !layer.enabled)),
+    );
     button.setAttribute('aria-busy', String(transitioning));
     button.textContent = transitioning
       ? t(LIFECYCLE_STATE_KEYS[layer.lifecycleState])
       : uncertain
-        ? t('layers.state.uncertain')
-        : layer.enabled
+      ? t('layers.state.uncertain')
+        : layer.enabled || unavailable
           ? t(FEED_STATE_KEYS[feedState])
           : t('layers.state.off');
-    const keyGuidance = layerKeyRequirementTooltip(layer);
-    // Name the missing key on the control itself: a row reading KEY REQUIRED
+    const keyGuidance = unavailable
+      ? String(layer.stats.error || t('layers.guidance.sourceUnavailable'))
+      : layerKeyRequirementTooltip(layer);    // Name the missing key on the control itself: a row reading KEY REQUIRED
     // without saying WHICH key leaves a dead control and no next step. Empty
     // when the layer needs no key, or already has one.
     button.title = keyGuidance;

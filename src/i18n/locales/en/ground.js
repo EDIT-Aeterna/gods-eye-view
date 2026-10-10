@@ -110,6 +110,7 @@ export default {
     errors: {
       rateLimitedDetail: '{detail} — try again in a moment',
       rateLimited: 'Routing is rate limited — try again in a moment',
+      httpUnavailable: 'Routing unavailable (HTTP {status})',
       noRouteBetween: 'No route found between A and B',
       failed: 'Routing failed: {error}',
       timedOut: 'Routing timed out',

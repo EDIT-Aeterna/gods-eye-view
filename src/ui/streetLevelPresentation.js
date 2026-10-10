@@ -207,8 +207,8 @@ function presentViewer(state) {
 }
 
 function presentMeta(state) {
-  if (!state.enabled) return t('streetlevel.meta.off');
-  if (state.sequence.selectedId)
+  if (state.providers.length === 0) return state.coverage.hint || '';
+  if (!state.enabled) return t('streetlevel.meta.off');  if (state.sequence.selectedId)
     return state.sequence.loading
       ? t('streetlevel.meta.sequenceLoading')
       : t('streetlevel.meta.sequence', {
@@ -233,7 +233,7 @@ export function presentStreetLevelPanel(state, { now = Date.now() } = {}) {
     enabled,
     keyRequired,
     status: presentStatus(state),
-    controlsDisabled: keyRequired,
+    controlsDisabled: keyRequired || state.providers.length === 0,
     providers: presentProviders(state),
     error: keyMissing
       ? null
