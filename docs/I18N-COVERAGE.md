@@ -130,10 +130,17 @@ Windows / Node 24.16.0 / Chrome 152, dev server on `localhost:4173`
 (2026-10-10). Every gate row states what actually ran on THIS commit and
 what remains environment-blocked.
 
-- `npm test` — 6,251 tests; 6,240 pass, 1 fail, 10 skipped, measured on
-  this i18n-only head. The only failure (`codexOauthRealtime` executable
-  resolution) reproduces on base `6be2559` on Windows and is untouched by
-  this work.
+- `npm test` — measured on the current merged head (upstream/main of
+  2026-10-10 merged into the i18n-only chain): **6,279 tests; 6,268 pass,
+  1 fail**, the baseline `codexOauthRealtime` Windows fixture. Upstream's
+  new surface was localized as part of the merge (source-unavailable
+  layer state, route-source error messages at the display edge, the AIS
+  awaiting-positions label); `check:boundaries` and `build` stay green.
+- `npm run test:track` — 106/109 functional assertions pass on the merged
+  head; the 3 failures are the "no console errors" checks tripped by this
+  machine's network dropping Google Fonts / Esri / terrain hosts
+  (ERR_CONNECTION_CLOSED) mid-run — the same environment class the
+  reviews recorded, not locale failures.
 - `npm run test:track` — **109/109**, re-run on the current commit.
 - `npm run format:check` (1,380 files), `npm run check:boundaries`,
   `npm run build` — green.
