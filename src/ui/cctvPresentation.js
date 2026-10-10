@@ -246,6 +246,10 @@ export function _updateCctvSyncChip(loading, enabled) {
   if (this.destroyed) return;
   if (!this._cctvSyncChip || !this._cctvSyncLabel || !this._cctvSyncProgress)
     return;
+  // Remember what the visible chip is showing so a locale switch can
+  // re-translate the label in place (repaintCctvSyncChipLabel) without
+  // touching the visibility or the completion dwell timer.
+  this._cctvChipMode = null;
   const total = Number(loading?.total) || 0;
   const loaded = Math.max(0, Math.min(Number(loading?.loaded) || 0, total));
   const busy = !!enabled && !!loading?.active && total > 0;
@@ -262,6 +266,7 @@ export function _updateCctvSyncChip(loading, enabled) {
     // during a grid load, and flapping it would read as a slot machine.
     this._cctvSyncProgress.textContent = `${loaded}/${total}`;
     this._cctvSyncChip.classList.add('visible');
+    this._cctvChipMode = 'loading';
     return;
   }
 
@@ -274,10 +279,12 @@ export function _updateCctvSyncChip(loading, enabled) {
     );
     this._cctvSyncProgress.textContent = `${total}/${total}`;
     this._cctvSyncChip.classList.add('visible');
+    this._cctvChipMode = 'ready';
     clearTimeout(this._cctvChipHideTimer);
     this._cctvChipHideTimer = window.setTimeout(() => {
       if (this.destroyed) return;
       this._cctvChipHideTimer = null;
+      this._cctvChipMode = null;
       this._cctvSyncChip.classList.remove('visible');
     }, 1500);
     return;
@@ -285,6 +292,25 @@ export function _updateCctvSyncChip(loading, enabled) {
 
   if (!this._cctvChipHideTimer) {
     this._cctvChipWasBusy = false;
+    this._cctvChipMode = null;
     this._cctvSyncChip.classList.remove('visible');
   }
+}
+
+/**
+ * Re-translate the visible sync-chip label for the active locale. Owners call
+ * this from their locale subscription: it only rewrites the TEXT of whatever
+ * state the chip is in (loading / grid-ready) and never changes visibility or
+ * the completion dwell timer, so a mid-dwell switch keeps the completion
+ * semantics instead of flashing the loading copy.
+ */
+export function repaintCctvSyncChipLabel() {
+  if (this.destroyed || !this._cctvSyncLabel || !this._cctvChipMode) return;
+  const key =
+    this._cctvChipMode === 'ready'
+      ? 'cctv.sync.gridReady'
+      : 'chrome.chips.cctvSync';
+  this.actions.setSplitFlapText(this._cctvSyncLabel, t(key), {
+    immediate: true,
+  });
 }

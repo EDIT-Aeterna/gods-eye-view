@@ -39,5 +39,6 @@ export default {
   panels: {
     radioTitle: '{action}电台',
     radioSectionAria: '{action}电台分区',
+    fallbackName: '面板',
   },
 };

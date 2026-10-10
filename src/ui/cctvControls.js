@@ -15,6 +15,7 @@ import {
   _renderCctvState,
   _typeCctvSummary,
   _updateCctvSyncChip,
+  repaintCctvSyncChipLabel,
 } from './cctvPresentation.js';
 import { _initCctvPanel } from './cctvBindings.js';
 import { subscribeLocale } from '../i18n/index.js';
@@ -40,7 +41,10 @@ export class CctvControls {
     this._actionGeneration = 0;
     // A locale switch re-paints the whole panel from the last known state.
     this._unsubscribeLocale = subscribeLocale(() => {
-      if (!this.destroyed) this._renderCctvState(this._cctvState);
+      if (!this.destroyed) {
+        this._renderCctvState(this._cctvState);
+        this.repaintCctvSyncChipLabel();
+      }
     });
     this._initCctvPanel();
     if (this._cctvVideo && typeof MutationObserver !== 'undefined') {
@@ -110,6 +114,10 @@ export class CctvControls {
   }
   _updateCctvSyncChip(...args) {
     return _updateCctvSyncChip.call(this, ...args);
+  }
+
+  repaintCctvSyncChipLabel() {
+    return repaintCctvSyncChipLabel.call(this);
   }
   _initCctvPanel(...args) {
     return _initCctvPanel.call(this, ...args);

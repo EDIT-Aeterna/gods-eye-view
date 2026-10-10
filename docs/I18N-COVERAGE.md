@@ -125,34 +125,41 @@ steps in the PR description).
 
 ## Automated checks
 
-Numbers below are from commit `74d5a5c` + the acceptance-report fixes, on
-Windows / Node 24.16.0 / Chrome 152 (npmmirror build), dev server on
-`localhost:4173`.
+Numbers below were re-run against the acceptance-review fixes on
+Windows / Node 24.16.0 / Chrome 152, dev server on `localhost:4173`
+(2026-10-10). Every gate row states what actually ran on THIS commit and
+what remains environment-blocked.
 
-- `npm test` — 6,246 tests; 6,235 pass, 1 fail, 10 skipped. The only failure
+- `npm test` — 6,250 tests; 6,239 pass, 1 fail, 11 skipped. The only failure
   (`codexOauthRealtime` executable resolution) reproduces on base `6be2559`
   on Windows and is untouched by this work.
-- `npm run test:track` — **109/109** (the harness pins `en` before load; its
-  visible-text assertions are English contracts).
+- `npm run test:track` — **109/109**, re-run on the current commit.
 - `npm run format:check` (1,380 files), `npm run check:boundaries`,
   `npm run build` — green.
 - i18n suites: `core.test.mjs` (13), `browser.test.mjs` (10, incl. the
   privacy-mode getter/getItem/setItem guards), `locales/parity.test.mjs` (3),
-  `bootMarkup.test.mjs` (5).
+  `bootMarkup.test.mjs` (5), `cctvSyncChip.test.mjs` (4: loading →
+  grid-ready → locale switch keeps the completion semantics and the dwell
+  timer).
 
-### Locale-relevant browser gates
+### Locale-relevant browser gates (this commit)
 
-| Gate | Result | Notes |
+| Gate | Result on this commit | Notes |
 | --- | --- | --- |
-| `qa:panel-resize` | pass (verified in the 2026-10-09 acceptance run) | locale-independent; not re-run after the collapse-label fix |
-| `qa:map-source-tray` | **locale assertions fixed; 2 environment failures remain** | The gate now pins `en` before load; the Esri fallback message asserted in English renders correctly (80 assertions pass). The two remaining failures are network-environmental on this machine: `services.arcgisonline.com/?f=json` is CORS-unreachable (so Esri is classified "unavailable" instead of "tile requests failed") and Bing `http:` tile probes are CSP-blocked, which trips the "no console errors" check. Neither is locale- or translation-related; the gate passes on a network that reaches those endpoints. |
-| `qa:street-level:fixtures` | **pass 29/29** | was failing on zh button text (`BUTTON:开` vs `BUTTON:ON`); the gate pins `en` and passes with a dummy Mapillary token. One earlier run hit a flaky photo-click (`images:0` at click time) that did not reproduce on the warmed server. |
-| `qa:transit` | **launch fixed; live-feed wait times out here** | The gate hardcoded the macOS Chrome path and never launched on Windows; it now resolves Chrome like every other gate (12/12 heading-regression assertions pass). The Boston (MBTA) section times out waiting 90 s for real GTFS-RT vehicles — a live-feed dependency, not a locale issue. |
+| `qa:panel-resize` | pass (2026-10-09/10 acceptance runs) | locale-independent |
+| `qa:map-source-tray` | locale assertions fixed; **2 environment failures remain** | The gate pins `en`; the Esri fallback message asserted in English renders correctly (80 assertions pass). The remaining failures are network-environmental on this machine: `services.arcgisonline.com/?f=json` is CORS-unreachable (Esri classifies "unavailable" instead of "tile requests failed") and Bing `http:` tile probes are CSP-blocked, tripping the "no console errors" check. Not locale- or translation-related. |
+| `qa:street-level:fixtures` | **fail at step 13 in this environment (flaky)** | Steps 1–12 pass (the earlier zh `BUTTON:开` failure is fixed by the locale pin). Step 13's photo click intermittently misses selection (`selectedId:null, images:0`) — observed on cold servers and after Google-3D network failures push the globe to the OSM fallback basemap; it passed 29/29 twice on a warmed server on 2026-10-09. The gate now re-finds the pick and retries the click (bounded) instead of a single shot. Environment/timing, not locale; needs an upstream look at pick-routing under the OSM fallback. |
+| `qa:transit-heading` | pass 5/5 | launch no longer hardcodes the macOS Chrome path (`GEV_QA_CHROME` > historical path > puppeteer default) |
+| `qa:transit` (full) | launch fixed; Boston section times out here | 12/12 heading-regression assertions pass on Windows; the MBTA section waits 90 s for real GTFS-RT vehicles — live-feed dependency. |
+| production `build` + `preview` | **re-verified on this commit** | headless zh boot: canvas renders, `无处遁形`, param-panel aria `折叠 参数`, no page errors. |
 
 ### Browser acceptance matrix notes
 
-The matrix below was verified live on 2026-10-09; the acceptance review later
-found the initial-state sync chips and the panel collapse labels, which are
-now fixed and re-verified in a throwing-localStorage privacy-mode browser
-session (boot succeeds, `展开 数据图层`/`折叠 显示` labels, zh chips, no
-page errors).
+Live matrix verified 2026-10-09/10 (zh/en first paint, saved vs detected
+locale, persistence, no-reload switching with tracked contact preserved,
+XSS-inert interpolation, share protocol intact, 1440×900 / 1024×768 /
+800×600). Re-verified after the acceptance fixes in a throwing-localStorage
+privacy-mode browser session (boot succeeds; `展开 数据图层` / `折叠 显示`
+/ `折叠 参数` labels; zh chips; no page errors) and a live zh↔en switch
+confirming the param-panel aria follows the locale
+(`折叠 参数` ↔ `Collapse PARAMETERS`).

@@ -40,5 +40,6 @@ export default {
   panels: {
     radioTitle: '{action} Radio',
     radioSectionAria: '{action} Radio section',
+    fallbackName: 'panel',
   },
 };

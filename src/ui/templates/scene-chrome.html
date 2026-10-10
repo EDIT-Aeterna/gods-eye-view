@@ -48,7 +48,10 @@
     <span id="traffic-sync-progress">0%</span>
   </div>
   <div id="cctv-sync-chip" aria-live="polite">
-    <span id="cctv-sync-label" data-i18n="chrome.chips.cctvSync">loading frames</span>
+    <!-- Owner-drawn (src/ui/cctvPresentation.js): the chip is hidden until
+         the layer writes a localized label, and a static binding would
+         clobber the completion state on a locale switch. -->
+    <span id="cctv-sync-label">loading frames</span>
     <span id="cctv-sync-progress">0/0</span>
   </div>
 

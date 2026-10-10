@@ -326,8 +326,8 @@ export class PanelChrome {
         btn.setAttribute('aria-expanded', String(!collapsed));
         const panelName =
           panelEl
-            .querySelector('.panel-title, .pp-header-label')
-            ?.textContent?.trim() || 'panel';
+            .querySelector('.panel-title, .pp-header-label, .param-panel-title')
+            ?.textContent?.trim() || t('chrome.panels.fallbackName');
         const action = collapsed ? t('common.expand') : t('common.collapse');
         btn.title = `${action} ${panelName}`;
         btn.setAttribute('aria-label', `${action} ${panelName}`);
@@ -345,8 +345,10 @@ export class PanelChrome {
     if (dockToggle) {
       const panelName =
         panelEl
-          .querySelector('.panel-title, .location-toolbar-label')
-          ?.textContent?.trim() || 'panel';
+          .querySelector(
+            '.panel-title, .location-toolbar-label, .param-panel-title',
+          )
+          ?.textContent?.trim() || t('chrome.panels.fallbackName');
       const action = collapsed ? t('common.expand') : t('common.collapse');
       dockToggle.setAttribute('aria-expanded', String(!collapsed));
       dockToggle.setAttribute('aria-label', `${action} ${panelName}`);
