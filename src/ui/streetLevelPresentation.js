@@ -208,7 +208,8 @@ function presentViewer(state) {
 
 function presentMeta(state) {
   if (state.providers.length === 0) return state.coverage.hint || '';
-  if (!state.enabled) return t('streetlevel.meta.off');  if (state.sequence.selectedId)
+  if (!state.enabled) return t('streetlevel.meta.off');
+  if (state.sequence.selectedId)
     return state.sequence.loading
       ? t('streetlevel.meta.sequenceLoading')
       : t('streetlevel.meta.sequence', {

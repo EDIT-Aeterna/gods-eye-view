@@ -45,6 +45,7 @@ export default {
     uav: 'Drone',
   },
   vessels: {
+    awaitingPositions: 'awaiting usable AIS positions…',
     chip: {
       firstConnect: 'awaiting first AIS position…',
       apiKeyRejected: 'API key rejected — check AISSTREAM_API_KEY',

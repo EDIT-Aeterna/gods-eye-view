@@ -716,13 +716,13 @@ export class LayerPanel {
     button.textContent = transitioning
       ? t(LIFECYCLE_STATE_KEYS[layer.lifecycleState])
       : uncertain
-      ? t('layers.state.uncertain')
+        ? t('layers.state.uncertain')
         : layer.enabled || unavailable
           ? t(FEED_STATE_KEYS[feedState])
           : t('layers.state.off');
     const keyGuidance = unavailable
       ? String(layer.stats.error || t('layers.guidance.sourceUnavailable'))
-      : layerKeyRequirementTooltip(layer);    // Name the missing key on the control itself: a row reading KEY REQUIRED
+      : layerKeyRequirementTooltip(layer); // Name the missing key on the control itself: a row reading KEY REQUIRED
     // without saying WHICH key leaves a dead control and no next step. Empty
     // when the layer needs no key, or already has one.
     button.title = keyGuidance;

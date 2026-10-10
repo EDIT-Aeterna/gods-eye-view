@@ -888,7 +888,8 @@ export function createDirectionsLayer({ services, source }) {
         {
           signal: controller.signal,
         },
-      );      if (seq !== _routeSeq || !_enabled) return;
+      );
+      if (seq !== _routeSeq || !_enabled) return;
       const route = normalizeRoutePayload(payload, mode);
       if (!route) {
         _route = null;

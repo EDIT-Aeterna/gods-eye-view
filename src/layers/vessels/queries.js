@@ -146,7 +146,9 @@ export function createQueries({
       error: emptyCoverage
         ? null
         : deriveAisFeedError(payload, acceptedRowCount) ||
-          (acceptedRowCount === 0 ? 'awaiting usable AIS positions…' : null),
+          (acceptedRowCount === 0
+            ? t('fleet.vessels.awaitingPositions')
+            : null),
     };
   }
 

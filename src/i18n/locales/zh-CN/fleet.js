@@ -41,6 +41,7 @@ export default {
     uav: '无人机',
   },
   vessels: {
+    awaitingPositions: '等待可用的 AIS 位置…',
     chip: {
       firstConnect: '等待第一个 AIS 位置…',
       apiKeyRejected: 'API 密钥被拒绝 — 请检查 AISSTREAM_API_KEY',
