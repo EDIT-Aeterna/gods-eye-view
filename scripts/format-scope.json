@@ -1087,5 +1087,8 @@
   "src/ui/styles/status-badge.css",
   "src/ui/statusBadge.test.mjs",
   "src/ui/cctvBadges.test.mjs",
-  "scripts/qa-status-badges.mjs"
+  "scripts/qa-status-badges.mjs",
+  "src/nightLightsOverlay.test.mjs",
+  "src/maps/nativeRasterImagery.test.mjs",
+  "public/assets/night-lights/README.md"
 ]

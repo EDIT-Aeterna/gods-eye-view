@@ -1749,6 +1749,8 @@
       "src/cctvFocusPolicy.js",
       "src/cctvFocusRequest.js",
       "src/celestialRing.js",
+      "src/nightLightsOverlay.js",
+      "src/maps/nativeRasterImagery.js",
       "src/cockpitCloudEffects.js",
       "src/cockpitMath.js",
       "src/cockpitTracking.js",
