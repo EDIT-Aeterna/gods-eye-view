@@ -1090,5 +1090,6 @@
   "scripts/qa-status-badges.mjs",
   "src/nightLightsOverlay.test.mjs",
   "src/maps/nativeRasterImagery.test.mjs",
-  "public/assets/night-lights/README.md"
+  "public/assets/night-lights/README.md",
+  "src/dockerTrustedPeers.test.mjs"
 ]
