@@ -2,10 +2,11 @@ import { catalogControlServices } from './catalog.js';
 import { StyleManager } from '../ui/composition.js';
 import { flyToAustin } from '../camera.js';
 import { initCockpitCloudEffects } from '../cockpitCloudEffects.js';
+import { t } from '../i18n/index.js';
 
 /** Construct the existing controls and camera presentation. */
 export function createApplicationControls({
-  scene: { viewer, mapStackController, operations },
+  scene: { viewer, mapStackController, operations, nightLights },
   loaderStatus,
   Controls = StyleManager,
   services,
@@ -22,6 +23,7 @@ export function createApplicationControls({
       fetchRegionalBrief: (...args) =>
         operations.requests.regional.getBrief(...args),
       ...catalogControlServices(catalog),
+      nightLights,
     },
     requestServices: operations.requests,
     mapStackController,
@@ -41,10 +43,10 @@ export function createApplicationControls({
 
   // If no share link state, do default fly-to Austin
   if (!styleManager.hasShareState) {
-    loaderStatus.textContent = 'Flying to Austin, TX...';
+    loaderStatus.textContent = t('Flying to Austin, TX...');
     defer(flyToAustin(viewer));
   } else {
-    loaderStatus.textContent = 'Restoring shared view...';
+    loaderStatus.textContent = t('Restoring shared view...');
   }
 
   return { styleManager, weatherEffects, cockpitCloudEffects };
